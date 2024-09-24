@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars Rover Control</title>
+    <style>
+        .controls {
+            margin-top: 20px;
+        }
+        .controls button {
+            margin-right: 10px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        code {
+            color: #d63384;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mars Rover Control Panel</h1>
+    
+    <!-- Display Rover's current status -->
+    <p id="roverStatus">Rover is at (0, 0) facing North.</p>
+
+    <!-- Controls for the rover -->
+    <div class="controls">
+        <button id="moveButton">Move Forward</button>
+        <button id="turnLeftButton">Turn Left</button>
+        <button id="turnRightButton">Turn Right</button>
+    </div>
+
+    <h2>TypeScript Code</h2>
+    <!-- Display the TypeScript code -->
+    <pre>
+<code>
+// Enum for Directions (North, East, South, West)
+enum Direction {
+    N = 'N', E = 'E', S = 'S', W = 'W'
+}
+
+// Rover's position in the grid
+interface Position {
+    x: number;
+    y: number;
+}
+
+// Grid class to represent the grid and obstacles
+class Grid {
+    constructor(private width: number, private height: number, private obstacles: Position[]) {}
+
+    // Checks if the next position is inside the grid and not blocked by an obstacle
+    isValidMove(position: Position): boolean {
+        const isWithinBounds = position.x >= 0 && position.x < this.width && position.y >= 0 && position.y < this.height;
+        const isObstacleFree = !this.obstacles.some(obstacle => obstacle.x === position.x && obstacle.y === position.y);
+        return isWithinBounds && isObstacleFree;
+    }
+}
+
+// Rover class to represent the rover
+class Rover {
+    constructor(private position: Position, private direction: Direction, private grid: Grid) {}
+
+    // Method to move the rover forward
+    move(): void {
+        const nextPosition = this.calculateNextPosition();
+        if (this.grid.isValidMove(nextPosition)) {
+            this.position = nextPosition;
+            this.updateStatus();
+        } else {
+            alert("Obstacle detected or out of bounds, can't move.");
+        }
+    }
+
+    // Method to turn the rover left (anticlockwise)
+    turnLeft(): void {
+        const leftTurns = { N: Direction.W, W: Direction.S, S: Direction.E, E: Direction.N };
+        this.direction = leftTurns[this.direction];
+        this.updateStatus();
+    }
+
+    // Method to turn the rover right (clockwise)
+    turnRight(): void {
+        const rightTurns = { N: Direction.E, E: Direction.S, S: Direction.W, W: Direction.N };
+        this.direction = rightTurns[this.direction];
+        this.updateStatus();
+    }
+
+    // Helper method to calculate the next position based on the direction
+    private calculateNextPosition(): Position {
+        const moveMap = { N: { x: 0, y: 1 }, E: { x: 1, y: 0 }, S: { x: 0, y: -1 }, W: { x: -1, y: 0 } };
+        const move = moveMap[this.direction];
+        return { x: this.position.x + move.x, y: this.position.y + move.y };
+    }
+
+    // Method to update rover's status on the webpage
+    updateStatus(): void {
+        const statusElement = document.getElementById("roverStatus");
+        if (statusElement) {
+            statusElement.innerHTML = `Rover is at (${this.position.x}, ${this.position.y}) facing ${this.direction}.`;
+        }
+    }
+}
+
+// Grid initialization (10x10) with obstacles at (2,2) and (3,5)
+const grid = new Grid(10, 10, [{ x: 2, y: 2 }, { x: 3, y: 5 }]);
+
+// Create the rover starting at (0, 0) facing North
+const rover = new Rover({ x: 0, y: 0 }, Direction.N, grid);
+
+// Connect the buttons to the rover's movement
+document.getElementById("moveButton")?.addEventListener("click", () => rover.move());
+document.getElementById("turnLeftButton")?.addEventListener("click", () => rover.turnLeft());
+document.getElementById("turnRightButton")?.addEventListener("click", () => rover.turnRight());
+
+// Initialize the status display
+rover.updateStatus();
+</code>
+    </pre>
+
+    <!-- Add the compiled TypeScript (after conversion to JavaScript) -->
+    <script src="app.js"></script>
+</body>
+</html>
